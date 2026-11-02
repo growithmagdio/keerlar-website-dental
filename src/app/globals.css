@@ -1,0 +1,237 @@
+@import "tailwindcss";
+
+/* Keeler Family Dental design system.
+   Layout: one fixed 3D stage on the home page, content sections scroll over it.
+   Single deliberate light theme (clinical white + icy blue). */
+@theme {
+  --color-brand: #1684c7;
+  --color-brand-deep: #0b5d91;
+  --color-brand-ink: #0a2a42;
+  --color-ice: #ddf5ff;
+  --color-mist: #f2faff;
+  --color-sky: #49b7f5;
+  --color-ink: #0c1f2e;
+  --color-slate: #4b6274;
+  --color-line: #d6e8f3;
+  --color-blush: #f6c7cf;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-jakarta), "Segoe UI", system-ui, sans-serif;
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root {
+  color-scheme: light;
+  --stage-bg: #ffffff;
+  --header-h: 76px;
+}
+
+html {
+  background: #ffffff;
+  -webkit-text-size-adjust: 100%;
+}
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+
+body {
+  background: #ffffff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  word-spacing: 0.04em;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-display); text-wrap: balance; letter-spacing: -0.022em; }
+/* Fraunces: soft terminals, optical sizing, and a lighter weight than the old sans so headlines read refined, not heavy */
+.font-display, h1, h2, h3, h4 { font-variation-settings: "SOFT" 60, "WONK" 0; font-optical-sizing: auto; }
+h1, h2 { font-weight: 480; }
+h3, h4 { font-weight: 540; letter-spacing: -0.012em; }
+h1 em, h2 em { font-style: italic; font-variation-settings: "SOFT" 100, "WONK" 1; }
+/* Small uppercase labels stay in the sans, which holds up better at tiny sizes */
+.font-display.uppercase { font-family: var(--font-sans); font-variation-settings: normal; font-weight: 700; }
+p { text-wrap: pretty; }
+::selection { background: var(--color-ice); color: var(--color-brand-ink); }
+:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: 6px; }
+
+.container-x {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+@media (min-width: 768px) { .container-x { padding-left: 40px; padding-right: 40px; } }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-sans); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-brand);
+}
+.eyebrow::before { content: ""; width: 22px; height: 2px; border-radius: 2px; background: currentColor; }
+
+/* Split-line reveal masks (GSAP SplitText) */
+.line-mask { overflow: hidden; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+
+/* Stage backdrop behind the 3D canvas */
+.stage-backdrop {
+  background:
+    radial-gradient(60% 55% at 72% 38%, rgba(73, 183, 245, 0.18), transparent 70%),
+    radial-gradient(45% 40% at 18% 80%, rgba(221, 245, 255, 0.9), transparent 70%),
+    var(--stage-bg);
+  transition: background-color 0.2s linear;
+}
+.orb { position: absolute; border-radius: 9999px; filter: blur(60px); opacity: 0.55; will-change: transform; }
+@keyframes orb-drift { 0%, 100% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(3%, -4%, 0) scale(1.08); } }
+.orb-a { animation: orb-drift 18s var(--ease-premium) infinite; }
+.orb-b { animation: orb-drift 24s var(--ease-premium) infinite reverse; }
+
+/* Scroll cue */
+@keyframes cue { 0% { transform: translateY(-100%); } 60%, 100% { transform: translateY(220%); } }
+.scroll-cue span { animation: cue 2.2s var(--ease-premium) infinite; }
+
+/* Anatomy labels drawn over the canvas */
+.anat-label { pointer-events: none; transition: opacity 0.45s var(--ease-premium); will-change: transform; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- Hero: animated tooth family (layered illustration) ---------- */
+.hero-light {
+  --hero-light: 0;
+  background:
+    radial-gradient(60% 58% at 70% 46%, #cfeeff 0%, #e2f4ff 42%, rgba(238, 248, 255, 0) 78%),
+    linear-gradient(180deg, #f1f9ff 0%, #e4f4fd 62%, rgba(230, 244, 253, 0) 100%);
+}
+.hero-light::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(48% 44% at 52% 58%, rgba(255, 255, 255, 0.95), rgba(214, 240, 255, 0.5) 45%, rgba(255, 255, 255, 0) 72%);
+  opacity: var(--hero-light);
+}
+@media (max-width: 1023px) {
+  .hero-light {
+    background:
+      radial-gradient(90% 40% at 50% 22%, #cfeeff 0%, #e2f4ff 45%, rgba(238, 248, 255, 0) 80%),
+      linear-gradient(180deg, #eef8ff 0%, #e4f4fd 60%, rgba(230, 244, 253, 0) 100%);
+  }
+}
+.tf-scroller { position: relative; transform-origin: 50% 62%; will-change: transform, opacity; }
+.tf-stage { position: relative; width: 100%; perspective: 1600px; }
+.tf-tooth, .tf-refl { position: absolute; will-change: transform, opacity; backface-visibility: hidden; opacity: 0; }
+.tf-tooth img, .tf-refl img { display: block; width: 100%; height: 100%; user-select: none; pointer-events: none; }
+.tf-refl {
+  z-index: 1;
+  filter: blur(1.2px);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 40%);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 40%);
+}
+.tf-shadow {
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(16, 76, 128, 0.36), rgba(16, 76, 128, 0.12) 55%, rgba(16, 76, 128, 0));
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.tf-glow {
+  position: absolute;
+  width: 72%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), rgba(196, 234, 255, 0.55) 42%, rgba(120, 200, 255, 0) 100%);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.tf-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.tf-front { z-index: 4; }
+.tf-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
+.tf-socket { position: absolute; border-radius: 50%; overflow: hidden; }
+.tf-lid { position: absolute; inset: 0; transform: translateY(-104%); }
+/* closed eye: a soft downward arc, like the child's happy eyes */
+.tf-lid::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 26%;
+  height: 34%;
+  border-bottom: 3px solid rgba(24, 31, 50, 0.92);
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+}
+.tf-part { position: absolute; will-change: transform; }
+.tf-part img { display: block; width: 100%; height: 100%; }
+.tf-mouth { transform-origin: 50% 28%; }
+.tf-comet { stroke-dasharray: 70 930; animation: tf-orbit 7s linear infinite; }
+.tf-comet-b { stroke-dasharray: 30 970; animation-delay: -3.5s; }
+@keyframes tf-orbit {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tf-tooth { opacity: 1; }
+  .tf-refl { opacity: 0.3; transform: scaleY(-1); }
+  .tf-shadow { opacity: 0.7; }
+  .tf-glow { opacity: 0.85; }
+  .tf-comet { animation: none; opacity: 0; }
+}
+
+/* ---------- Upgrade pass: cards, steps, labels, chips ---------- */
+.promo-chip {
+  border-radius: 1rem;
+  padding: 0.4rem 1rem 0.4rem 0.4rem;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 36px -26px rgba(10, 42, 66, 0.45), inset 0 0 0 1px rgba(214, 232, 244, 0.9);
+  backdrop-filter: blur(12px);
+  transition: transform 0.35s var(--ease-premium), box-shadow 0.35s var(--ease-premium);
+}
+.promo-chip:hover { transform: translateY(-2px); box-shadow: 0 22px 40px -24px rgba(10, 42, 66, 0.5), inset 0 0 0 1px rgba(22, 132, 199, 0.35); }
+
+.service-card {
+  max-width: 38rem;
+  border-radius: 2rem;
+  padding: 1.75rem;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.86), rgba(240, 249, 255, 0.72));
+  box-shadow: 0 40px 80px -48px rgba(10, 42, 66, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.9), inset 0 1px 0 rgba(255, 255, 255, 1);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+@media (min-width: 768px) { .service-card { padding: 2.5rem; } }
+
+.layer-card { transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s var(--ease-premium); outline: none; }
+.layer-card:hover, .layer-card:focus-visible { background: #fff; transform: translateY(-2px); box-shadow: 0 20px 40px -28px rgba(10, 42, 66, 0.5), inset 0 0 0 1.5px rgba(22, 132, 199, 0.45); }
+
+.anat-label[data-active="true"] .anat-chip { background: var(--color-brand); color: #fff; box-shadow: 0 10px 24px -10px rgba(22, 132, 199, 0.8); }
+.anat-label[data-active="true"] .anat-dot { transform: scale(1.35); }
+.anat-label { cursor: pointer; }
+
+.impl-step { transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.4s var(--ease-premium), opacity 0.4s ease; opacity: 0.7; }
+.impl-step[data-state="active"] { opacity: 1; background: #fff; transform: translateX(6px); box-shadow: 0 24px 44px -30px rgba(10, 42, 66, 0.55), inset 0 0 0 1.5px rgba(22, 132, 199, 0.45); }
+.impl-step[data-state="done"] { opacity: 1; }
+.impl-step[data-state="active"] .impl-num, .impl-step[data-state="done"] .impl-num { background: var(--color-brand); color: #fff; }
+
+/* Header scroll progress */
+.scroll-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; transform-origin: 0 50%; transform: scaleX(0); background: linear-gradient(90deg, var(--color-sky), var(--color-brand)); }
+
+/* Hero: enamel lighting layers (masked to each tooth's own silhouette) */
+.tf-halo { position: absolute; inset: -2%; filter: blur(14px); opacity: 0.55; z-index: -1; }
+.tf-halo > div, .tf-ambient, .tf-sheen { position: absolute; inset: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.tf-halo > div { background: #5fbcff; }
+.tf-ambient {
+  inset: 0;
+  background: radial-gradient(120% 95% at 30% 12%, rgba(255, 255, 255, 0) 45%, rgba(58, 146, 214, 0.32) 100%);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.tf-sheen { overflow: hidden; mix-blend-mode: screen; pointer-events: none; }
+.tf-sheen > span {
+  position: absolute; top: -10%; bottom: -10%; left: 0; width: 34%;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.75) 45%, rgba(214, 240, 255, 0.5) 55%, rgba(255, 255, 255, 0) 100%);
+  transform: translateX(-120%) skewX(-16deg);
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) { .tf-sheen { display: none; } }
